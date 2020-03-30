@@ -190,3 +190,14 @@ fn print(level: log::Level, msg: Arguments<'_>, key_values: impl log::kv::Source
         );
     }
 }
+
+#[cfg(feature = "tracing-compat")]
+#[doc(hidden)]
+pub mod __macro_support {
+    #[doc(hidden)]
+    pub use tracing_futures::Instrument;
+}
+
+#[cfg(feature = "tracing-compat")]
+#[doc(hidden)]
+pub use tracing::trace_span as __async_log_trace_span;

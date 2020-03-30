@@ -1,5 +1,6 @@
 #[doc(hidden)]
 #[macro_export]
+#[cfg(not(feature = "tracing-compat"))]
 macro_rules! span_inner {
     ($args:expr, $block:expr) => {{
         let span = async_log::Span::new($args);
@@ -9,6 +10,22 @@ macro_rules! span_inner {
     }};
 }
 
+#[doc(hidden)]
+#[macro_export]
+#[cfg(feature = "tracing-compat")]
+macro_rules! span_inner {
+    ($args:expr, async $block:expr) => {{
+        $crate::__macro_support::Instrument::instrument(
+            async $block,
+            $crate::__async_log_trace_span!("async_log", message = %$args)
+        )
+    }};
+    ($args:expr, $block:expr) => {{
+        let span = $crate::__async_log_trace_span!("async_log", message = %$args);
+        let _guard = span.enter();
+        $block
+    }};
+}
 /// Create a tracing span.
 ///
 /// Spans are pairs of `trace!` logs. Every `span` wraps a block, and logs a message at the start,
